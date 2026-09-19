@@ -1,0 +1,28 @@
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'lib/data/remote/supabase_service.dart', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'lib/features/caregiver/screens/caregiver_connect_sheet.dart', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'lib/features/face_recognition/screens/face_scan_screen.dart', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'lib/features/profile/widgets/profile_bottom_sheet.dart', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'lib/features/progress/widgets/achievement_badge.dart', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'lib/features/progress/widgets/exercise_timeline.dart', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'lib/features/today/widgets/activity_card.dart', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'lib/features/today/widgets/medicine_card.dart', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'lib/features/today/widgets/water_tracker_card.dart', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'pubspec.lock', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'pubspec.yaml', LF will be replaced by CRLF the next time Git touches it
+ .gitignore                                                  |  3 [32m+++[m
+ analysis_options.yaml                                       |  1 [32m+[m
+ android/app/build.gradle.kts                                |  7 [32m++++++[m[31m-[m
+ android/build.gradle.kts                                    |  2 [32m++[m
+ lib/data/remote/supabase_service.dart                       |  2 [32m+[m[31m-[m
+ lib/features/caregiver/screens/caregiver_connect_sheet.dart |  2 [32m+[m[31m-[m
+ lib/features/face_recognition/screens/face_scan_screen.dart |  2 [32m+[m[31m-[m
+ lib/features/profile/widgets/profile_bottom_sheet.dart      |  2 [32m+[m[31m-[m
+ lib/features/progress/widgets/achievement_badge.dart        |  2 [32m+[m[31m-[m
+ lib/features/progress/widgets/exercise_timeline.dart        |  2 [32m+[m[31m-[m
+ lib/features/today/widgets/activity_card.dart               |  2 [32m+[m[31m-[m
+ lib/features/today/widgets/medicine_card.dart               |  2 [32m+[m[31m-[m
+ lib/features/today/widgets/water_tracker_card.dart          |  2 [32m+[m[31m-[m
+ pubspec.lock                                                | 12 [32m++++++[m[31m------[m
+ pubspec.yaml                                                |  2 [32m+[m[31m-[m
+ 15 files changed, 28 insertions(+), 17 deletions(-)

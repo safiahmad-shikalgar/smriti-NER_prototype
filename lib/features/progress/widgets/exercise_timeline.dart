@@ -87,7 +87,7 @@ class ExerciseTimeline extends StatelessWidget {
                 width: 2,
                 height: 48,
                 color: isCompleted
-                    ? AppColors.sageGreen.withOpacity(0.5)
+                    ? AppColors.sageGreen.withValues(alpha: 0.5)
                     : AppColors.borderSoft,
               ),
           ],

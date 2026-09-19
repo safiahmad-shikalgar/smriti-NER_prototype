@@ -72,7 +72,7 @@ class WaterTrackerCard extends StatelessWidget {
                   height: 60,
                   decoration: BoxDecoration(
                     color: isFilled
-                        ? AppColors.activeBlue.withOpacity(0.15)
+                        ? AppColors.activeBlue.withValues(alpha: 0.15)
                         : AppColors.softNeutral,
                     borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                     border: Border.all(

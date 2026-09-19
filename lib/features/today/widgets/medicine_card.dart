@@ -59,7 +59,7 @@ class MedicineCard extends StatelessWidget {
                 width: 52,
                 height: 52,
                 decoration: BoxDecoration(
-                  color: AppColors.activeBlue.withOpacity(0.15),
+                  color: AppColors.activeBlue.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(

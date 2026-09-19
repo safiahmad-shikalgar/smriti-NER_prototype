@@ -223,7 +223,7 @@ class _FaceScanScreenState extends State<FaceScanScreen> {
                         height: 280,
                         decoration: BoxDecoration(
                           border: Border.all(
-                            color: Colors.white.withOpacity(0.6),
+                            color: Colors.white.withValues(alpha: 0.6),
                             width: 2,
                           ),
                           borderRadius: BorderRadius.circular(
