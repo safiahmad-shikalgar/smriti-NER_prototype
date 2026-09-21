@@ -6,6 +6,7 @@ class Patient {
   final String preferredLanguage;
   final String? profilePhotoPath;
   final String caregiverInfo;
+  final String medicalInfo;
   final DateTime createdAt;
 
   Patient({
@@ -16,6 +17,7 @@ class Patient {
     required this.preferredLanguage,
     this.profilePhotoPath,
     required this.caregiverInfo,
+    this.medicalInfo = '',
     required this.createdAt,
   });
 
@@ -28,6 +30,7 @@ class Patient {
       'preferred_language': preferredLanguage,
       'profile_photo_path': profilePhotoPath,
       'caregiver_info': caregiverInfo,
+      'medical_info': medicalInfo,
       'created_at': createdAt.toIso8601String(),
     };
   }
@@ -42,6 +45,7 @@ class Patient {
           map['preferred_language'] as String? ?? 'Assamese / English',
       profilePhotoPath: map['profile_photo_path'] as String?,
       caregiverInfo: map['caregiver_info'] as String? ?? '',
+      medicalInfo: map['medical_info'] as String? ?? '',
       createdAt:
           DateTime.tryParse(map['created_at'] as String? ?? '') ??
           DateTime.now(),

@@ -39,8 +39,8 @@ class _TodayScreenState extends State<TodayScreen> {
       subtitle: 'Stay hydrated throughout the day',
       scheduledTime: 'All Day',
       type: 'water',
-      targetCount: 6,
-      completedCount: 3,
+      targetCount: 2000,
+      completedCount: 250,
       isCompleted: false,
       createdAt: DateTime.now(),
     ),
@@ -90,20 +90,7 @@ class _TodayScreenState extends State<TodayScreen> {
     _loadReminders();
   }
 
-  Future<void> _handleWaterCountChanged(
-    Reminder waterReminder,
-    int newCount,
-  ) async {
-    final updated = waterReminder.copyWith(
-      completedCount: newCount,
-      isCompleted: newCount >= waterReminder.targetCount,
-      lastCompletedAt: DateTime.now(),
-    );
-    try {
-      await _reminderRepository.updateReminder(updated);
-    } catch (_) {}
-    _loadReminders();
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -125,14 +112,14 @@ class _TodayScreenState extends State<TodayScreen> {
       (r) => r.type == 'water',
       orElse:
           () => Reminder(
-            id: 'rem_water',
+            id: 'rem_water_01',
             patientId: 'patient_aai_01',
             title: 'Drink Warm Water',
             subtitle: 'Stay hydrated throughout the day',
             scheduledTime: 'All Day',
             type: 'water',
-            targetCount: 6,
-            completedCount: 3,
+            targetCount: 2000,
+            completedCount: 0,
             createdAt: DateTime.now(),
           ),
     );
@@ -191,8 +178,7 @@ class _TodayScreenState extends State<TodayScreen> {
               // Water Tracker Card
               WaterTrackerCard(
                 waterReminder: waterReminder,
-                onCountChanged:
-                    (count) => _handleWaterCountChanged(waterReminder, count),
+                onUpdated: _loadReminders,
               ),
               const SizedBox(height: AppSpacing.xl),
 

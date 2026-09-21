@@ -13,6 +13,16 @@ class Reminder {
   final DateTime? lastCompletedAt;
   final DateTime createdAt;
 
+  // Medicine-specific fields
+  final String? dosage;
+  final String? morningTime;
+  final String? afternoonTime;
+  final String? eveningTime;
+  final bool isActive;
+  final bool isMorningDone;
+  final bool isAfternoonDone;
+  final bool isEveningDone;
+
   Reminder({
     required this.id,
     required this.patientId,
@@ -25,6 +35,14 @@ class Reminder {
     this.isCompleted = false,
     this.lastCompletedAt,
     required this.createdAt,
+    this.dosage,
+    this.morningTime,
+    this.afternoonTime,
+    this.eveningTime,
+    this.isActive = true,
+    this.isMorningDone = false,
+    this.isAfternoonDone = false,
+    this.isEveningDone = false,
   });
 
   Map<String, dynamic> toMap() {
@@ -40,6 +58,14 @@ class Reminder {
       'is_completed': isCompleted ? 1 : 0,
       'last_completed_at': lastCompletedAt?.toIso8601String(),
       'created_at': createdAt.toIso8601String(),
+      'dosage': dosage,
+      'morning_time': morningTime,
+      'afternoon_time': afternoonTime,
+      'evening_time': eveningTime,
+      'is_active': isActive ? 1 : 0,
+      'is_morning_done': isMorningDone ? 1 : 0,
+      'is_afternoon_done': isAfternoonDone ? 1 : 0,
+      'is_evening_done': isEveningDone ? 1 : 0,
     };
   }
 
@@ -60,6 +86,14 @@ class Reminder {
       createdAt:
           DateTime.tryParse(map['created_at'] as String? ?? '') ??
           DateTime.now(),
+      dosage: map['dosage'] as String?,
+      morningTime: map['morning_time'] as String?,
+      afternoonTime: map['afternoon_time'] as String?,
+      eveningTime: map['evening_time'] as String?,
+      isActive: (map['is_active'] as int? ?? 1) == 1,
+      isMorningDone: (map['is_morning_done'] as int? ?? 0) == 1,
+      isAfternoonDone: (map['is_afternoon_done'] as int? ?? 0) == 1,
+      isEveningDone: (map['is_evening_done'] as int? ?? 0) == 1,
     );
   }
 
@@ -72,6 +106,14 @@ class Reminder {
     int? completedCount,
     bool? isCompleted,
     DateTime? lastCompletedAt,
+    String? dosage,
+    String? morningTime,
+    String? afternoonTime,
+    String? eveningTime,
+    bool? isActive,
+    bool? isMorningDone,
+    bool? isAfternoonDone,
+    bool? isEveningDone,
   }) {
     return Reminder(
       id: id,
@@ -85,6 +127,14 @@ class Reminder {
       isCompleted: isCompleted ?? this.isCompleted,
       lastCompletedAt: lastCompletedAt ?? this.lastCompletedAt,
       createdAt: createdAt,
+      dosage: dosage ?? this.dosage,
+      morningTime: morningTime ?? this.morningTime,
+      afternoonTime: afternoonTime ?? this.afternoonTime,
+      eveningTime: eveningTime ?? this.eveningTime,
+      isActive: isActive ?? this.isActive,
+      isMorningDone: isMorningDone ?? this.isMorningDone,
+      isAfternoonDone: isAfternoonDone ?? this.isAfternoonDone,
+      isEveningDone: isEveningDone ?? this.isEveningDone,
     );
   }
 }

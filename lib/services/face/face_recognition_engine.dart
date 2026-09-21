@@ -6,6 +6,8 @@ enum RecognitionStatus {
   matchFound,
   unknownPerson,
   noFaceDetected,
+  multipleFacesDetected,
+  invalidImage,
   permissionDenied,
   error,
 }

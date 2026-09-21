@@ -40,33 +40,37 @@ class HomeHeader extends StatelessWidget {
               Row(
                 children: [
                   // Dedicated Face-Recognition Camera Button (Separate from profile icon)
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const FaceScanScreen(),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      margin: const EdgeInsets.only(right: AppSpacing.md),
-                      decoration: ShapeDecoration(
-                        color: AppColors.warmPaleCoral,
-                        shape: RoundedRectangleBorder(
-                          side: const BorderSide(
-                            width: 1.5,
-                            color: AppColors.coral,
+                  Semantics(
+                    label: 'Scan face or recognize family member',
+                    button: true,
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const FaceScanScreen(),
                           ),
-                          borderRadius: BorderRadius.circular(22),
+                        );
+                      },
+                      child: Container(
+                        width: 48,
+                        height: 48,
+                        margin: const EdgeInsets.only(right: AppSpacing.md),
+                        decoration: ShapeDecoration(
+                          color: AppColors.warmPaleCoral,
+                          shape: RoundedRectangleBorder(
+                            side: const BorderSide(
+                              width: 1.5,
+                              color: AppColors.coral,
+                            ),
+                            borderRadius: BorderRadius.circular(24),
+                          ),
                         ),
-                      ),
-                      child: const Icon(
-                        Icons.face_retouching_natural,
-                        color: AppColors.coral,
-                        size: 24,
+                        child: const Icon(
+                          Icons.face_retouching_natural,
+                          color: AppColors.coral,
+                          size: 24,
+                        ),
                       ),
                     ),
                   ),

@@ -2,16 +2,20 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
+
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/constants/asset_paths.dart';
-import '../../../models/family_member.dart';
 import '../../../data/repositories/family_repository.dart';
+import '../../../models/family_member.dart';
+import '../../../services/auth/auth_service.dart';
 import '../../../widgets/app_button.dart';
 
 class AddFamilyMemberScreen extends StatefulWidget {
-  const AddFamilyMemberScreen({super.key});
+  final FamilyMember? member;
+
+  const AddFamilyMemberScreen({super.key, this.member});
 
   @override
   State<AddFamilyMemberScreen> createState() => _AddFamilyMemberScreenState();
@@ -21,6 +25,7 @@ class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
   final FamilyRepository _repository = FamilyRepository();
   final ImagePicker _picker = ImagePicker();
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _storyController = TextEditingController();
 
   static const List<String> relationships = [
     'Son',
@@ -30,11 +35,36 @@ class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
     'Brother',
     'Sister',
     'Friend',
+    'Other',
   ];
 
-  String _selectedRelationship = 'Granddaughter';
+  String _selectedRelationship = 'Other';
   File? _imageFile;
+  String? _existingPhotoPath;
   bool _isSaving = false;
+  bool _isDeleting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.member != null) {
+      _nameController.text = widget.member!.name;
+      _storyController.text = widget.member!.story ?? '';
+      if (relationships.contains(widget.member!.relationship)) {
+        _selectedRelationship = widget.member!.relationship;
+      } else {
+        _selectedRelationship = 'Other';
+      }
+      _existingPhotoPath = widget.member!.photoPath;
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _storyController.dispose();
+    super.dispose();
+  }
 
   Future<void> _pickImage(ImageSource source) async {
     try {
@@ -56,17 +86,30 @@ class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
       return;
     }
 
+    final userId = AuthService.instance.currentUser?.id;
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User not authenticated.')));
+      return;
+    }
+
     setState(() => _isSaving = true);
 
-    final photoPath = _imageFile?.path ?? AssetPaths.riyaAvatar;
+    String photoPath = AssetPaths.aaiAvatar;
+    if (_imageFile != null) {
+      photoPath = _imageFile!.path;
+    } else if (_existingPhotoPath != null) {
+      photoPath = _existingPhotoPath!;
+    }
+
     final newMember = FamilyMember(
-      id: const Uuid().v4(),
-      patientId: 'patient_aai_01',
+      id: widget.member?.id ?? const Uuid().v4(),
+      patientId: userId,
       name: name,
       relationship: _selectedRelationship,
       photoPath: photoPath,
-      faceEmbedding: [0.1, 0.2, 0.3, 0.4, 0.5], // seeded embedding
-      createdAt: DateTime.now(),
+      story: _storyController.text.trim().isNotEmpty ? _storyController.text.trim() : null,
+      faceEmbedding: widget.member?.faceEmbedding ?? [0.1, 0.2, 0.3],
+      createdAt: widget.member?.createdAt ?? DateTime.now(),
     );
 
     await _repository.insertFamilyMember(newMember);
@@ -77,12 +120,26 @@ class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
     }
   }
 
+  Future<void> _deleteMember() async {
+    if (widget.member == null) return;
+    
+    setState(() => _isDeleting = true);
+    await _repository.deleteFamilyMember(widget.member!.id);
+    
+    if (mounted) {
+      setState(() => _isDeleting = false);
+      Navigator.pop(context, true);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isEditing = widget.member != null;
+    
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text('Add Family Member', style: AppTypography.headingMedium()),
+        title: Text(isEditing ? 'Edit Family Member' : 'Add Family Member', style: AppTypography.headingMedium()),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -136,28 +193,31 @@ class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
                       border: Border.all(color: AppColors.coral, width: 2),
                     ),
                     clipBehavior: Clip.antiAlias,
-                    child:
-                        _imageFile != null
-                            ? Image.file(_imageFile!, fit: BoxFit.cover)
-                            : const Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.add_a_photo,
-                                  color: AppColors.coral,
-                                  size: 36,
-                                ),
-                                SizedBox(height: 4),
-                                Text(
-                                  'Add Photo',
-                                  style: TextStyle(
-                                    color: AppColors.coral,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
+                    child: _imageFile != null
+                        ? Image.file(_imageFile!, fit: BoxFit.cover)
+                        : _existingPhotoPath != null && _existingPhotoPath!.startsWith('assets/')
+                            ? Image.asset(_existingPhotoPath!, fit: BoxFit.cover)
+                            : _existingPhotoPath != null
+                                ? Image.file(File(_existingPhotoPath!), fit: BoxFit.cover)
+                                : const Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.add_a_photo,
+                                        color: AppColors.coral,
+                                        size: 36,
+                                      ),
+                                      SizedBox(height: 4),
+                                      Text(
+                                        'Add Photo',
+                                        style: TextStyle(
+                                          color: AppColors.coral,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ),
-                              ],
-                            ),
                   ),
                 ),
               ),
@@ -189,7 +249,7 @@ class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
               ),
               const SizedBox(height: AppSpacing.xl),
               Text(
-                'Relationship to Aai',
+                'Relationship to You',
                 style: AppTypography.bodyLarge(weight: FontWeight.w700),
               ),
               const SizedBox(height: AppSpacing.xs),
@@ -214,12 +274,48 @@ class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
                   ),
                 ),
               ),
+              const SizedBox(height: AppSpacing.xl),
+              Text(
+                'Story / About Person',
+                style: AppTypography.bodyLarge(weight: FontWeight.w700),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              TextField(
+                controller: _storyController,
+                style: AppTypography.bodyLarge(),
+                maxLines: 4,
+                decoration: InputDecoration(
+                  hintText: 'Add a special story or context to remember this person by...',
+                  filled: true,
+                  fillColor: AppColors.surfaceWhite,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                    borderSide: const BorderSide(color: AppColors.borderSoft),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                    borderSide: const BorderSide(
+                      color: AppColors.coral,
+                      width: 2,
+                    ),
+                  ),
+                ),
+              ),
               const SizedBox(height: AppSpacing.xxxl),
               AppButton(
-                label: _isSaving ? 'Saving...' : 'Save Family Member',
+                label: _isSaving ? 'Saving...' : (isEditing ? 'Update Member' : 'Save Family Member'),
                 icon: Icons.check,
                 onPressed: _isSaving ? null : _saveMember,
               ),
+              if (isEditing) ...[
+                const SizedBox(height: AppSpacing.md),
+                AppButton(
+                  label: _isDeleting ? 'Deleting...' : 'Delete Member',
+                  icon: Icons.delete,
+                  variant: ButtonVariant.secondary,
+                  onPressed: _isDeleting ? null : _deleteMember,
+                ),
+              ],
             ],
           ),
         ),

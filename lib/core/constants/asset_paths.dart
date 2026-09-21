@@ -4,6 +4,10 @@ class AssetPaths {
   static const String bhutJolokia = 'assets/images/market/bhut_jolokia.webp';
   static const String bambooShoots = 'assets/images/market/bamboo_shoots.webp';
   static const String rawTurmeric = 'assets/images/market/raw_turmeric.webp';
+  static const String pitha = 'assets/images/market/pitha.webp';
+  static const String johaRice = 'assets/images/market/joha_rice.webp';
+  static const String mustardOil = 'assets/images/market/mustard_oil.webp';
+  static const String tamul = 'assets/images/market/tamul.webp';
 
   // Family portraits
   static const String aaiAvatar = 'assets/images/family/aai.png';

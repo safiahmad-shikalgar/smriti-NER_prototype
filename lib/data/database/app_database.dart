@@ -24,7 +24,17 @@ class AppDatabase {
       path,
       version: AppConstants.databaseVersion,
       onCreate: _createDB,
+      onUpgrade: _upgradeDB,
     );
+  }
+
+  Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute('ALTER TABLE ${DatabaseTables.patients} ADD COLUMN medical_info TEXT DEFAULT ""');
+    }
+    if (oldVersion < 3) {
+      await db.execute('ALTER TABLE ${DatabaseTables.familyMembers} ADD COLUMN story TEXT');
+    }
   }
 
   Future<void> _createDB(Database db, int version) async {

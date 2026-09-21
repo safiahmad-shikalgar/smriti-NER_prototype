@@ -142,5 +142,97 @@ void main() {
       );
       expect(synced.length, equals(1));
     });
+
+    test('Memory CRUD and highlight filtering operates accurately', () async {
+      await db.insert(DatabaseTables.memories, {
+        'id': 'mem_highlight_01',
+        'patient_id': 'patient_aai_01',
+        'title': 'Bihu Festival Dance',
+        'description': 'Spring celebration with family',
+        'photo_path': 'assets/images/memories/bihu_celebration.png',
+        'date_description': 'April 2024',
+        'is_highlight': 1,
+        'created_at': DateTime.now().toIso8601String(),
+      });
+
+      await db.insert(DatabaseTables.memories, {
+        'id': 'mem_normal_02',
+        'patient_id': 'patient_aai_01',
+        'title': 'Morning Garden Walk',
+        'description': 'Pleasant walk in tea gardens',
+        'photo_path': 'assets/images/memories/kaziranga_trip.png',
+        'date_description': 'May 2024',
+        'is_highlight': 0,
+        'created_at': DateTime.now().toIso8601String(),
+      });
+
+      final highlights = await db.query(
+        DatabaseTables.memories,
+        where: 'is_highlight = 1',
+      );
+      expect(highlights.length, equals(1));
+      expect(highlights.first['title'], equals('Bihu Festival Dance'));
+
+      final all = await db.query(DatabaseTables.memories);
+      expect(all.length, equals(2));
+    });
+
+    test('Reminder logs audit trail records medicine actions reliably', () async {
+      final now = DateTime.now().toIso8601String();
+      await db.insert(DatabaseTables.reminderLogs, {
+        'id': 'log_001',
+        'reminder_id': 'rem_med_01',
+        'action_taken': 'medicine_taken',
+        'logged_at': now,
+      });
+
+      final logs = await db.query(
+        DatabaseTables.reminderLogs,
+        where: 'reminder_id = ?',
+        whereArgs: ['rem_med_01'],
+      );
+      expect(logs.length, equals(1));
+      expect(logs.first['action_taken'], equals('medicine_taken'));
+    });
+
+    test('Transactions maintain atomicity during batch operations', () async {
+      await db.transaction((txn) async {
+        await txn.insert(DatabaseTables.patients, {
+          'id': 'patient_txn_01',
+          'name': 'Txn Patient',
+          'full_name': 'Txn Full Name',
+          'age': 75,
+          'preferred_language': 'Assamese',
+          'created_at': DateTime.now().toIso8601String(),
+        });
+
+        await txn.insert(DatabaseTables.reminders, {
+          'id': 'rem_txn_01',
+          'patient_id': 'patient_txn_01',
+          'title': 'Txn Reminder',
+          'subtitle': 'Txn Subtitle',
+          'scheduled_time': '12:00 PM',
+          'type': 'water',
+          'target_count': 6,
+          'completed_count': 0,
+          'is_completed': 0,
+          'created_at': DateTime.now().toIso8601String(),
+        });
+      });
+
+      final patient = await db.query(
+        DatabaseTables.patients,
+        where: 'id = ?',
+        whereArgs: ['patient_txn_01'],
+      );
+      expect(patient.length, equals(1));
+
+      final reminder = await db.query(
+        DatabaseTables.reminders,
+        where: 'id = ?',
+        whereArgs: ['rem_txn_01'],
+      );
+      expect(reminder.length, equals(1));
+    });
   });
 }

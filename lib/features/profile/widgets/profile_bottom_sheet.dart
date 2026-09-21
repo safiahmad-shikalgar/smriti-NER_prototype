@@ -7,24 +7,69 @@ import '../../../core/constants/asset_paths.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../widgets/app_avatar.dart';
 import '../../caregiver/screens/caregiver_connect_sheet.dart';
+import '../../../data/repositories/patient_repository.dart';
+import '../../../models/patient.dart';
+import '../../../services/auth/auth_service.dart';
+import '../screens/profile_edit_screen.dart';
 
-class ProfileBottomSheet extends StatelessWidget {
+class ProfileBottomSheet extends StatefulWidget {
   const ProfileBottomSheet({super.key});
 
   @override
+  State<ProfileBottomSheet> createState() => _ProfileBottomSheetState();
+}
+
+class _ProfileBottomSheetState extends State<ProfileBottomSheet> {
+  final PatientRepository _patientRepo = PatientRepository();
+  Patient? _patient;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPatient();
+  }
+
+  Future<void> _loadPatient() async {
+    final user = AuthService.instance.currentUser;
+    final patient = await _patientRepo.getPatient(user?.id);
+    if (mounted) {
+      setState(() {
+        _patient = patient;
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.xxl,
-        vertical: AppSpacing.xl,
-      ),
-      decoration: const BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppSpacing.radiusLg),
+    if (_isLoading) {
+      return Container(
+        height: 200,
+        decoration: const BoxDecoration(
+          color: AppColors.background,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusLg)),
         ),
+        child: const Center(child: CircularProgressIndicator(color: AppColors.coral)),
+      );
+    }
+
+    final name = _patient?.fullName ?? AppConstants.defaultPatientFullName;
+    final age = _patient?.age ?? AppConstants.defaultPatientAge;
+    final lang = _patient?.preferredLanguage ?? AppConstants.defaultLanguage;
+    final caregiver = _patient?.caregiverInfo ?? 'Aparna Baruah';
+
+    return Material(
+      color: AppColors.background,
+      borderRadius: const BorderRadius.vertical(
+        top: Radius.circular(AppSpacing.radiusLg),
       ),
-      child: SafeArea(
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.xxl,
+          vertical: AppSpacing.xl,
+        ),
+        child: SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -49,17 +94,17 @@ class ProfileBottomSheet extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        AppConstants.defaultPatientFullName,
+                        name,
                         style: AppTypography.headingSmall(),
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Age: ${AppConstants.defaultPatientAge} • ${AppConstants.defaultLanguage}',
+                        'Age: $age • $lang',
                         style: AppTypography.bodySmall(),
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Caregiver: Aparna Baruah',
+                        'Caregiver: $caregiver',
                         style: AppTypography.bodySmall(
                           color: AppColors.sageGreen,
                           weight: FontWeight.w600,
@@ -73,6 +118,16 @@ class ProfileBottomSheet extends StatelessWidget {
             const SizedBox(height: AppSpacing.xl),
             const Divider(color: AppColors.borderSoft),
             const SizedBox(height: AppSpacing.md),
+            _buildProfileItem(
+              context,
+              icon: Icons.edit,
+              title: 'Edit Profile',
+              subtitle: 'Update your medical information and details',
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileEditScreen()));
+              },
+            ),
             _buildProfileItem(
               context,
               icon: Icons.link,
@@ -89,31 +144,20 @@ class ProfileBottomSheet extends StatelessWidget {
             ),
             _buildProfileItem(
               context,
-              icon: Icons.cloud_sync,
-              title: 'Sync Status',
-              subtitle: 'Saved offline in SQLite • Auto-syncs when online',
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'All records safely stored offline on your device.',
-                    ),
-                    backgroundColor: AppColors.deepTeal,
-                  ),
-                );
+              icon: Icons.logout,
+              title: 'Sign Out',
+              subtitle: 'Securely sign out of your account',
+              onTap: () async {
+                final navigator = Navigator.of(context);
+                await AuthService.instance.signOut();
+                if (navigator.mounted) navigator.pop();
               },
-            ),
-            _buildProfileItem(
-              context,
-              icon: Icons.help_outline,
-              title: 'Help & Voice Guide',
-              subtitle: 'Tap Mati / Speak anytime to hear instructions',
-              onTap: () {},
             ),
             const SizedBox(height: AppSpacing.lg),
           ],
         ),
       ),
+    ),
     );
   }
 

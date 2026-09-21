@@ -52,6 +52,30 @@ class HaatBazaarGameService {
       assetPath: AssetPaths.rawTurmeric,
       assameseName: 'কেঁচা হালধি (Kesa Halodhi)',
     ),
+    MarketItem(
+      id: 'pitha',
+      name: 'Pitha (Sweet Rice Cake)',
+      assetPath: AssetPaths.pitha,
+      assameseName: 'পিঠা (Pitha)',
+    ),
+    MarketItem(
+      id: 'joha_rice',
+      name: 'Joha Rice',
+      assetPath: AssetPaths.johaRice,
+      assameseName: 'জহা চাউল (Joha Saul)',
+    ),
+    MarketItem(
+      id: 'mustard_oil',
+      name: 'Mustard Oil',
+      assetPath: AssetPaths.mustardOil,
+      assameseName: 'মিঠা তেল (Mitha Tel)',
+    ),
+    MarketItem(
+      id: 'tamul',
+      name: 'Tamul & Paan',
+      assetPath: AssetPaths.tamul,
+      assameseName: 'তামোল-পাণ (Tamul-Paan)',
+    ),
   ];
 
   final GameRepository _gameRepository;
@@ -137,14 +161,14 @@ class HaatBazaarGameService {
     final shuffled = List<MarketItem>.from(availableItems)..shuffle(random);
 
     int targetCount = 3;
-    int choiceCount = 4;
+    int choiceCount = 6;
 
     if (difficulty == 'easy') {
       targetCount = 2;
-      choiceCount = 3;
+      choiceCount = 4;
     } else if (difficulty == 'hard') {
       targetCount = 4;
-      choiceCount = 4;
+      choiceCount = 8;
     }
 
     _currentTargetItems = shuffled.take(targetCount).toList();

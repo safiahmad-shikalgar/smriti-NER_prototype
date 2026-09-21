@@ -2,97 +2,130 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../../data/repositories/memory_repository.dart';
-import '../../../models/memory.dart';
-import '../widgets/home_header.dart';
+import '../../../core/theme/app_typography.dart';
+import '../../profile/widgets/profile_bottom_sheet.dart';
+import '../../help/screens/help_screen.dart';
 import '../widgets/quick_action_card.dart';
-import '../widgets/memory_highlight_card.dart';
+import '../../face_recognition/screens/face_scan_screen.dart';
+import '../../wellbeing/screens/wellbeing_screen.dart';
+import '../../voice_assistant/screens/voice_assistant_screen.dart';
 
-class HomeScreen extends StatefulWidget {
-  final Function(int) onNavigateTab;
+class HomeScreen extends StatelessWidget {
+  final Function(int)? onNavigateTab; // Kept for API compatibility if needed by MainScaffold
 
-  const HomeScreen({super.key, required this.onNavigateTab});
-
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  final MemoryRepository _memoryRepository = MemoryRepository();
-  Memory? _highlightMemory;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadHighlightMemory();
-  }
-
-  Future<void> _loadHighlightMemory() async {
-    final memory = await _memoryRepository.getHighlightMemory();
-    if (mounted) {
-      setState(() {
-        _highlightMemory = memory;
-      });
-    }
-  }
+  const HomeScreen({super.key, this.onNavigateTab});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: Text('SMRITI', style: AppTypography.headingLarge(color: AppColors.coral)),
+        backgroundColor: AppColors.surfaceWhite,
+        elevation: 1,
+        centerTitle: true,
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const HomeHeader(),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
-                child: Column(
-                  children: [
-                    // Action 1: Let's Play (Pale coral card, coral border)
-                    QuickActionCard(
-                      title: "Let's Play",
-                      subtitle: "Fun memory games made for you",
-                      icon: Icons.extension,
-                      backgroundColor: AppColors.warmPaleCoral,
-                      borderColor: AppColors.coral,
-                      iconColor: AppColors.coral,
-                      onTap: () =>
-                          widget.onNavigateTab(1), // Navigate to Play tab
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    // Action 2: My Memories (Soft neutral card, sage green border)
-                    QuickActionCard(
-                      title: "My Memories",
-                      subtitle: "Look at familiar family photos",
-                      icon: Icons.photo_library,
-                      backgroundColor: AppColors.softNeutral,
-                      borderColor: AppColors.sageGreen,
-                      iconColor: AppColors.sageGreen,
-                      onTap: () =>
-                          widget.onNavigateTab(2), // Navigate to Memories tab
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    // Action 3: Today's Guide (Warm beige card, gray-brown border)
-                    QuickActionCard(
-                      title: "Today's Guide",
-                      subtitle: "Your medicine & water helper",
-                      icon: Icons.calendar_today,
-                      backgroundColor: AppColors.warmBeige,
-                      borderColor: AppColors.textMuted,
-                      iconColor: AppColors.textPrimary,
-                      onTap: () =>
-                          widget.onNavigateTab(3), // Navigate to Today tab
-                    ),
-                  ],
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.xxl),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Dashboard',
+                  style: AppTypography.headingLarge(color: AppColors.textPrimary),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.xxl),
-              MemoryHighlightCard(memory: _highlightMemory),
-              const SizedBox(height: AppSpacing.xxxl),
-            ],
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  'What would you like to do?',
+                  style: AppTypography.bodyLarge(color: AppColors.textMuted),
+                ),
+                const SizedBox(height: AppSpacing.xxxl),
+                
+                // 1. Face Recognition
+                QuickActionCard(
+                  title: 'Face Recognition',
+                  subtitle: 'Identify a family member',
+                  icon: Icons.face_retouching_natural,
+                  backgroundColor: AppColors.warmPaleCoral,
+                  borderColor: AppColors.coral,
+                  iconColor: AppColors.coral,
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(
+                      builder: (_) => const FaceScanScreen(),
+                    ));
+                  },
+                ),
+                const SizedBox(height: AppSpacing.lg),
+
+                // 2. Voice Assistant
+                QuickActionCard(
+                  title: 'Voice Assistant',
+                  subtitle: 'Talk to your smart helper',
+                  icon: Icons.mic,
+                  backgroundColor: AppColors.softNeutral,
+                  borderColor: AppColors.sageGreen,
+                  iconColor: AppColors.sageGreen,
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(
+                      builder: (_) => const VoiceAssistantScreen(),
+                    ));
+                  },
+                ),
+                const SizedBox(height: AppSpacing.lg),
+
+                // 3. Profile
+                QuickActionCard(
+                  title: 'My Profile',
+                  subtitle: 'View or edit your details',
+                  icon: Icons.person,
+                  backgroundColor: AppColors.warmBeige,
+                  borderColor: AppColors.textMuted,
+                  iconColor: AppColors.textPrimary,
+                  onTap: () {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (_) => const ProfileBottomSheet(),
+                    );
+                  },
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                // 4. Wellbeing
+                QuickActionCard(
+                  title: 'My Wellbeing',
+                  subtitle: 'Check how you are feeling',
+                  icon: Icons.self_improvement,
+                  backgroundColor: AppColors.surfaceWhite,
+                  borderColor: AppColors.coral,
+                  iconColor: AppColors.coral,
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(
+                      builder: (_) => const WellbeingScreen(),
+                    ));
+                  },
+                ),
+                const SizedBox(height: AppSpacing.lg),
+
+                // 5. Help
+                QuickActionCard(
+                  title: 'Help & Support',
+                  subtitle: 'Get assistance with the app',
+                  icon: Icons.help_outline,
+                  backgroundColor: AppColors.surfaceWhite,
+                  borderColor: AppColors.sageGreen,
+                  iconColor: AppColors.sageGreen,
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(
+                      builder: (_) => const HelpScreen(),
+                    ));
+                  },
+                ),
+                const SizedBox(height: AppSpacing.xxxl),
+              ],
+            ),
           ),
         ),
       ),

@@ -14,5 +14,5 @@ class AppConstants {
 
   // Database
   static const String databaseName = 'smriti_ner.db';
-  static const int databaseVersion = 1;
+  static const int databaseVersion = 3;
 }

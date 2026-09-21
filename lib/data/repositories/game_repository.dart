@@ -95,4 +95,18 @@ class GameRepository {
     } catch (_) {}
     return 80.0;
   }
+
+  Future<List<DifficultyEvent>> getRecentDifficultyEvents({int limit = 10}) async {
+    try {
+      final db = await _dbProvider.database;
+      final results = await db.query(
+        DatabaseTables.difficultyEvents,
+        orderBy: 'created_at DESC',
+        limit: limit,
+      );
+      return results.map((e) => DifficultyEvent.fromMap(e)).toList();
+    } catch (_) {
+      return [];
+    }
+  }
 }

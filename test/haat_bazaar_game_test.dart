@@ -1,4 +1,4 @@
-﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:smriti_mvp_new/services/game/haat_bazaar_game_service.dart';
 import 'package:smriti_mvp_new/data/repositories/game_repository.dart';
 import 'package:smriti_mvp_new/services/dda/rule_based_difficulty_engine.dart';
@@ -28,7 +28,7 @@ void main() {
       expect(gameService.currentRoundNumber, equals(1));
       expect(gameService.completedRounds, isEmpty);
       expect(gameService.currentTargetItems.length, equals(3));
-      expect(gameService.currentPresentedChoices.length, equals(4));
+      expect(gameService.currentPresentedChoices.length, equals(6));
     });
 
     test('Adapts exposure duration based on difficulty level', () {

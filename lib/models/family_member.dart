@@ -5,6 +5,7 @@ class FamilyMember {
   final String relationship; // Son, Daughter, Grandson, Granddaughter, Brother, Sister, Friend
   final String photoPath;
   final String? voiceNotePath;
+  final String? story;
   final List<double>? faceEmbedding;
   final DateTime createdAt;
 
@@ -15,6 +16,7 @@ class FamilyMember {
     required this.relationship,
     required this.photoPath,
     this.voiceNotePath,
+    this.story,
     this.faceEmbedding,
     required this.createdAt,
   });
@@ -27,6 +29,7 @@ class FamilyMember {
       'relationship': relationship,
       'photo_path': photoPath,
       'voice_note_path': voiceNotePath,
+      'story': story,
       'face_embedding': faceEmbedding?.join(','),
       'created_at': createdAt.toIso8601String(),
     };
@@ -48,6 +51,7 @@ class FamilyMember {
       relationship: map['relationship'] as String,
       photoPath: map['photo_path'] as String,
       voiceNotePath: map['voice_note_path'] as String?,
+      story: map['story'] as String?,
       faceEmbedding: embedding,
       createdAt:
           DateTime.tryParse(map['created_at'] as String? ?? '') ??

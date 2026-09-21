@@ -28,6 +28,7 @@ class SeedData {
       'preferred_language': AppConstants.defaultLanguage,
       'profile_photo_path': AssetPaths.aaiAvatar,
       'caregiver_info': 'Dr. Bhupen / Aparna (Daughter-in-law)',
+      'medical_info': 'Blood Pressure (mild), High Cholesterol',
       'created_at': now,
     });
 

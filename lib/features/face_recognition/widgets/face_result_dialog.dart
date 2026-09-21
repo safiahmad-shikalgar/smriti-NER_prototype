@@ -6,6 +6,7 @@ import '../../../core/theme/app_typography.dart';
 import '../../../models/family_member.dart';
 import '../../../widgets/app_avatar.dart';
 import '../../../widgets/app_button.dart';
+import '../../memories/screens/member_memories_screen.dart';
 
 class FaceResultDialog extends StatelessWidget {
   final FamilyMember? matchedMember;
@@ -77,7 +78,29 @@ class FaceResultDialog extends StatelessWidget {
               ),
             ],
             const SizedBox(height: AppSpacing.xxl),
-            AppButton(label: 'Done', onPressed: () => Navigator.pop(context)),
+            if (matchedMember != null) ...[
+              AppButton(
+                label: 'View Memories',
+                icon: Icons.photo_library,
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => MemberMemoriesScreen(member: matchedMember!),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              AppButton(
+                label: 'Done',
+                variant: ButtonVariant.secondary,
+                onPressed: () => Navigator.pop(context),
+              ),
+            ] else ...[
+              AppButton(label: 'Done', onPressed: () => Navigator.pop(context)),
+            ],
           ],
         ),
       ),

@@ -36,16 +36,23 @@ class SyncRepository {
     String? error,
   }) async {
     final db = await _dbProvider.database;
-    await db.update(
-      DatabaseTables.syncQueue,
-      {
-        'status': status,
-        'last_error': error,
-        'updated_at': DateTime.now().toIso8601String(),
-      },
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    if (status == 'failed') {
+      await db.rawUpdate(
+        'UPDATE ${DatabaseTables.syncQueue} SET status = ?, last_error = ?, retry_count = retry_count + 1, updated_at = ? WHERE id = ?',
+        [status, error, DateTime.now().toIso8601String(), id],
+      );
+    } else {
+      await db.update(
+        DatabaseTables.syncQueue,
+        {
+          'status': status,
+          'last_error': error,
+          'updated_at': DateTime.now().toIso8601String(),
+        },
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    }
   }
 
   Future<int> getPendingCount() async {

@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:uuid/uuid.dart';
-import 'package:image_picker/image_picker.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../core/constants/asset_paths.dart';
-import '../../../data/repositories/family_repository.dart';
-import '../../../data/repositories/memory_repository.dart';
+import '../../../widgets/mati_speak_button.dart';
 import '../../../models/family_member.dart';
 import '../../../models/memory.dart';
-import '../../../widgets/mati_speak_button.dart';
+import '../../../data/repositories/family_repository.dart';
+import '../../../data/repositories/memory_repository.dart';
+import '../../../services/auth/auth_service.dart';
 import '../widgets/family_member_tile.dart';
 import '../widgets/memory_card.dart';
 import 'add_family_member_screen.dart';
+import 'add_memory_screen.dart';
 
 class MemoriesScreen extends StatefulWidget {
   const MemoriesScreen({super.key});
@@ -24,55 +23,10 @@ class MemoriesScreen extends StatefulWidget {
 class _MemoriesScreenState extends State<MemoriesScreen> {
   final FamilyRepository _familyRepository = FamilyRepository();
   final MemoryRepository _memoryRepository = MemoryRepository();
-  final ImagePicker _picker = ImagePicker();
 
-  List<FamilyMember> _familyMembers = [
-    FamilyMember(
-      id: 'fam_riya',
-      patientId: 'patient_aai_01',
-      name: 'Riya',
-      relationship: 'Granddaughter',
-      photoPath: AssetPaths.riyaAvatar,
-      createdAt: DateTime.now(),
-    ),
-    FamilyMember(
-      id: 'fam_dejit',
-      patientId: 'patient_aai_01',
-      name: 'Dejit',
-      relationship: 'Son',
-      photoPath: AssetPaths.dejitAvatar,
-      createdAt: DateTime.now(),
-    ),
-    FamilyMember(
-      id: 'fam_mona',
-      patientId: 'patient_aai_01',
-      name: 'Mona',
-      relationship: 'Daughter',
-      photoPath: AssetPaths.monaAvatar,
-      createdAt: DateTime.now(),
-    ),
-  ];
-
-  List<Memory> _memories = [
-    Memory(
-      id: 'mem_1',
-      patientId: 'patient_aai_01',
-      title: "Riya's 20th Birthday",
-      description: 'Celebrated in Guwahati with whole family',
-      photoPath: AssetPaths.riyaBirthdayMemory,
-      dateDescription: 'Last Winter, Guwahati',
-      createdAt: DateTime.now(),
-    ),
-    Memory(
-      id: 'mem_2',
-      patientId: 'patient_aai_01',
-      title: 'Rongali Bihu Festival',
-      description: 'Dancing and making pitha with granddaughter Riya',
-      photoPath: AssetPaths.bihuCelebrationMemory,
-      dateDescription: 'April Bohag Bihu',
-      createdAt: DateTime.now(),
-    ),
-  ];
+  List<FamilyMember> _familyMembers = [];
+  List<Memory> _memories = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -81,43 +35,47 @@ class _MemoriesScreenState extends State<MemoriesScreen> {
   }
 
   Future<void> _loadData() async {
+    final userId = AuthService.instance.currentUser?.id;
+    if (userId == null) {
+      if (mounted) setState(() => _isLoading = false);
+      return;
+    }
+
     try {
-      final family = await _familyRepository.getAllFamilyMembers();
-      final mems = await _memoryRepository.getAllMemories();
+      final family = await _familyRepository.getAllFamilyMembers(userId);
+      final mems = await _memoryRepository.getAllMemories(userId);
+      
       if (mounted) {
         setState(() {
-          if (family.isNotEmpty) _familyMembers = family;
-          if (mems.isNotEmpty) _memories = mems;
+          _familyMembers = family;
+          _memories = mems;
+          _isLoading = false;
         });
       }
     } catch (_) {
-      // Keep default memory data
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   Future<void> _addNewMemoryPhoto() async {
-    final picked = await _picker.pickImage(source: ImageSource.gallery);
-    if (picked != null) {
-      final newMemory = Memory(
-        id: const Uuid().v4(),
-        patientId: 'patient_aai_01',
-        title: 'New Family Photo',
-        description: 'Cherished family moment saved today',
-        photoPath: picked.path,
-        dateDescription: 'Today',
-        createdAt: DateTime.now(),
-      );
-      try {
-        await _memoryRepository.insertMemory(newMemory);
-      } catch (_) {}
-      setState(() {
-        _memories.insert(0, newMemory);
-      });
-    }
+    final added = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const AddMemoryScreen(),
+      ),
+    );
+    if (added == true) _loadData();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        backgroundColor: AppColors.background,
+        body: Center(child: CircularProgressIndicator(color: AppColors.coral)),
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -135,8 +93,7 @@ class _MemoriesScreenState extends State<MemoriesScreen> {
                 children: [
                   Text('My Memories', style: AppTypography.headingLarge()),
                   const MatiSpeakButton(
-                    textToSpeak:
-                        'My Memories. Look at familiar family photos.',
+                    textToSpeak: 'My Memories. Look at familiar family photos.',
                   ),
                 ],
               ),
@@ -186,7 +143,18 @@ class _MemoriesScreenState extends State<MemoriesScreen> {
                   itemCount: _familyMembers.length + 1,
                   itemBuilder: (context, index) {
                     if (index < _familyMembers.length) {
-                      return FamilyMemberTile(member: _familyMembers[index]);
+                      return GestureDetector(
+                        onTap: () async {
+                          final updated = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => AddFamilyMemberScreen(member: _familyMembers[index]),
+                            ),
+                          );
+                          if (updated == true) _loadData();
+                        },
+                        child: FamilyMemberTile(member: _familyMembers[index]),
+                      );
                     } else {
                       // Add button tile
                       return GestureDetector(
@@ -262,7 +230,34 @@ class _MemoriesScreenState extends State<MemoriesScreen> {
                 ],
               ),
               const SizedBox(height: AppSpacing.md),
-              ..._memories.map((m) => MemoryCard(memory: m)),
+              if (_memories.isEmpty)
+                Container(
+                  padding: const EdgeInsets.all(AppSpacing.xl),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceWhite,
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                    border: Border.all(color: AppColors.borderSoft),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'No memories added yet.\nTap "Add Photo" to create one.',
+                      textAlign: TextAlign.center,
+                      style: AppTypography.bodyMedium(color: AppColors.textMuted),
+                    ),
+                  ),
+                ),
+              ..._memories.map((m) => GestureDetector(
+                onTap: () async {
+                  final updated = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => AddMemoryScreen(memory: m),
+                    ),
+                  );
+                  if (updated == true) _loadData();
+                },
+                child: MemoryCard(memory: m),
+              )),
               const SizedBox(height: AppSpacing.xxl),
             ],
           ),

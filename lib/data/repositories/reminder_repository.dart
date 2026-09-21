@@ -53,4 +53,23 @@ class ReminderRepository {
       'logged_at': DateTime.now().toIso8601String(),
     });
   }
+
+  Future<List<Map<String, dynamic>>> getReminderLogs(String reminderId) async {
+    final db = await _dbProvider.database;
+    return await db.query(
+      DatabaseTables.reminderLogs,
+      where: 'reminder_id = ?',
+      whereArgs: [reminderId],
+      orderBy: 'logged_at DESC',
+    );
+  }
+
+  Future<void> deleteReminderLog(String logId) async {
+    final db = await _dbProvider.database;
+    await db.delete(
+      DatabaseTables.reminderLogs,
+      where: 'id = ?',
+      whereArgs: [logId],
+    );
+  }
 }

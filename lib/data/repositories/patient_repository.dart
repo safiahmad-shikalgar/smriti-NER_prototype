@@ -9,10 +9,13 @@ class PatientRepository {
   PatientRepository({AppDatabase? dbProvider})
       : _dbProvider = dbProvider ?? AppDatabase.instance;
 
-  Future<Patient?> getPatient() async {
+  Future<Patient?> getPatient([String? authUserId]) async {
     try {
       final db = await _dbProvider.database;
-      final results = await db.query(DatabaseTables.patients, limit: 1);
+      final results = authUserId != null
+          ? await db.query(DatabaseTables.patients, where: 'id = ?', whereArgs: ['patient_$authUserId'], limit: 1)
+          : await db.query(DatabaseTables.patients, limit: 1);
+          
       if (results.isNotEmpty) {
         return Patient.fromMap(results.first);
       }
@@ -23,11 +26,9 @@ class PatientRepository {
   Future<void> updatePatient(Patient patient) async {
     try {
       final db = await _dbProvider.database;
-      await db.update(
+      await db.insert(
         DatabaseTables.patients,
         patient.toMap(),
-        where: 'id = ?',
-        whereArgs: [patient.id],
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
     } catch (_) {}

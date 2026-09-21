@@ -24,6 +24,7 @@ class DatabaseTables {
       preferred_language TEXT NOT NULL,
       profile_photo_path TEXT,
       caregiver_info TEXT,
+      medical_info TEXT,
       created_at TEXT NOT NULL
     );
     ''',
@@ -35,6 +36,7 @@ class DatabaseTables {
       relationship TEXT NOT NULL,
       photo_path TEXT NOT NULL,
       voice_note_path TEXT,
+      story TEXT,
       face_embedding TEXT,
       created_at TEXT NOT NULL
     );
