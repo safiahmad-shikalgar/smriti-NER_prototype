@@ -17,30 +17,48 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
 
   bool _isLoading = false;
+  bool _isLogin = false; // Default to Create Account for first install
+  bool _obscurePassword = true;
   String? _errorMessage;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  Future<void> _handleLogin() async {
-    if (!_formKey.currentState!.validate()) return;
-
+  Future<void> _handleSubmit() async {
+    if (_isLoading) return;
+    
     setState(() {
-      _isLoading = true;
       _errorMessage = null;
     });
 
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
     try {
-      await AuthService.instance.signIn(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
-      );
+      if (_isLogin) {
+        await AuthService.instance.signIn(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        );
+      } else {
+        await AuthService.instance.signUp(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        );
+      }
       // On success, AuthWrapper will detect the session change and navigate automatically.
     } on AuthException catch (e) {
       setState(() {
@@ -57,6 +75,14 @@ class _LoginScreenState extends State<LoginScreen> {
         });
       }
     }
+  }
+
+  void _toggleMode() {
+    setState(() {
+      _isLogin = !_isLogin;
+      _errorMessage = null;
+      _formKey.currentState?.reset();
+    });
   }
 
   @override
@@ -79,14 +105,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   Text(
-                    'Please sign in to continue.',
+                    _isLogin 
+                        ? 'Please sign in to continue.'
+                        : 'Create your account to get started.',
                     style: AppTypography.bodyLarge(color: AppColors.textMuted),
                   ),
                   const SizedBox(height: AppSpacing.xxxl),
                   
                   // Email Field
                   Text(
-                    'Email Address',
+                    'Gmail Address',
                     style: AppTypography.headingSmall(color: AppColors.textPrimary),
                   ),
                   const SizedBox(height: AppSpacing.sm),
@@ -97,6 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: AppColors.surfaceWhite,
+                      hintText: 'e.g. name@gmail.com',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                         borderSide: const BorderSide(color: AppColors.borderSoft),
@@ -115,8 +144,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       if (value == null || value.trim().isEmpty) {
                         return 'Please enter your email.';
                       }
-                      if (!value.contains('@')) {
-                        return 'Please enter a valid email.';
+                      final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+                      if (!emailRegex.hasMatch(value.trim())) {
+                        return 'Please enter a valid email address.';
                       }
                       return null;
                     },
@@ -125,17 +155,35 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   // Password Field
                   Text(
-                    'Password',
+                    _isLogin ? 'SMRITI-NER Password' : 'Create SMRITI-NER Password',
                     style: AppTypography.headingSmall(color: AppColors.textPrimary),
                   ),
+                  if (!_isLogin) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      'This is a password for SMRITI-NER, not your Gmail password.',
+                      style: AppTypography.bodySmall(color: AppColors.coral),
+                    ),
+                  ],
                   const SizedBox(height: AppSpacing.sm),
                   TextFormField(
                     controller: _passwordController,
-                    obscureText: true,
+                    obscureText: _obscurePassword,
                     style: AppTypography.bodyLarge(),
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: AppColors.surfaceWhite,
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                          color: AppColors.textMuted,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                         borderSide: const BorderSide(color: AppColors.borderSoft),
@@ -152,11 +200,54 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your password.';
+                        return 'Please enter a password.';
+                      }
+                      if (!_isLogin && value.length < 6) {
+                        return 'Password must be at least 6 characters.';
                       }
                       return null;
                     },
                   ),
+                  
+                  if (!_isLogin) ...[
+                    const SizedBox(height: AppSpacing.xl),
+                    Text(
+                      'Confirm Password',
+                      style: AppTypography.headingSmall(color: AppColors.textPrimary),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    TextFormField(
+                      controller: _confirmPasswordController,
+                      obscureText: _obscurePassword,
+                      style: AppTypography.bodyLarge(),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: AppColors.surfaceWhite,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                          borderSide: const BorderSide(color: AppColors.borderSoft),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                          borderSide: const BorderSide(color: AppColors.borderSoft),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                          borderSide: const BorderSide(color: AppColors.coral, width: 2),
+                        ),
+                        contentPadding: const EdgeInsets.all(AppSpacing.lg),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please confirm your password.';
+                        }
+                        if (value != _passwordController.text) {
+                          return 'Passwords do not match.';
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
                   const SizedBox(height: AppSpacing.xxl),
 
                   // Error Message
@@ -184,14 +275,27 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: AppSpacing.xl),
                   ],
 
-                  // Login Button
+                  // Action Button
                   _isLoading
                       ? const Center(child: CircularProgressIndicator(color: AppColors.coral))
                       : AppButton(
-                          label: 'Sign In',
-                          onPressed: _handleLogin,
-                          icon: Icons.login,
+                          label: _isLogin ? 'Sign In' : 'Create Account',
+                          onPressed: _handleSubmit,
+                          icon: _isLogin ? Icons.login : Icons.person_add,
                         ),
+                        
+                  const SizedBox(height: AppSpacing.xl),
+                  Center(
+                    child: TextButton(
+                      onPressed: _isLoading ? null : _toggleMode,
+                      child: Text(
+                        _isLogin 
+                            ? 'Need an account? Create one'
+                            : 'Already have an account? Sign In',
+                        style: AppTypography.bodyLarge(color: AppColors.coral),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),

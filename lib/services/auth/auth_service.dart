@@ -17,6 +17,13 @@ class AuthService {
     return await _client!.auth.signInWithPassword(email: email, password: password);
   }
 
+  Future<AuthResponse> signUp({required String email, required String password}) async {
+    if (_client == null) {
+      throw Exception('Database connection not available. Please check network or configuration.');
+    }
+    return await _client!.auth.signUp(email: email, password: password);
+  }
+
   Future<void> signOut() async {
     await _client?.auth.signOut();
   }

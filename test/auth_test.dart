@@ -35,6 +35,22 @@ class MockAuthService extends AuthService {
   }
 
   @override
+  Future<AuthResponse> signUp({required String email, required String password}) async {
+    if (delayDuration != Duration.zero) {
+      await Future.delayed(delayDuration);
+    }
+    if (shouldThrow) {
+      if (isNetworkError) {
+        throw Exception(errorMsg);
+      }
+      throw AuthException(errorMsg);
+    }
+    _isLoggedIn = true;
+    _authStateController.add(AuthState(AuthChangeEvent.signedIn, currentSession));
+    return AuthResponse(session: currentSession, user: currentUser);
+  }
+
+  @override
   Future<void> signOut() async {
     _isLoggedIn = false;
     _authStateController.add(AuthState(AuthChangeEvent.signedOut, null));
@@ -74,19 +90,43 @@ void main() {
     AuthService.instance = MockAuthService();
   });
 
-  testWidgets('Login screen rendering', (WidgetTester tester) async {
+  testWidgets('Login screen rendering (default create account mode)', (WidgetTester tester) async {
     await tester.pumpWidget(const MaterialApp(home: LoginScreen()));
     await tester.pumpAndSettle();
 
     expect(find.text('Welcome to SMRITI'), findsOneWidget);
-    expect(find.text('Email Address'), findsOneWidget);
-    expect(find.text('Password'), findsOneWidget);
+    expect(find.text('Create your account to get started.'), findsOneWidget);
+    expect(find.text('Gmail Address'), findsOneWidget);
+    expect(find.text('Create SMRITI-NER Password'), findsOneWidget);
+    expect(find.text('Confirm Password'), findsOneWidget);
+    expect(find.text('Create Account'), findsOneWidget);
+  });
+
+  testWidgets('Toggle to Sign In mode', (WidgetTester tester) async {
+    await tester.pumpWidget(const MaterialApp(home: LoginScreen()));
+    await tester.pumpAndSettle();
+
+    final toggleBtn = find.text('Already have an account? Sign In');
+    await tester.ensureVisible(toggleBtn);
+    await tester.tap(toggleBtn);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Please sign in to continue.'), findsOneWidget);
+    expect(find.text('SMRITI-NER Password'), findsOneWidget);
+    expect(find.text('Confirm Password'), findsNothing);
     expect(find.text('Sign In'), findsOneWidget);
   });
 
   testWidgets('Empty email validation', (WidgetTester tester) async {
     await tester.pumpWidget(const MaterialApp(home: LoginScreen()));
-    await tester.tap(find.text('Sign In'));
+    final toggleBtn = find.text('Already have an account? Sign In');
+    await tester.ensureVisible(toggleBtn);
+    await tester.tap(toggleBtn);
+    await tester.pumpAndSettle();
+
+    final submitBtn = find.text('Sign In');
+    await tester.ensureVisible(submitBtn);
+    await tester.tap(submitBtn);
     await tester.pumpAndSettle();
 
     expect(find.text('Please enter your email.'), findsOneWidget);
@@ -95,30 +135,65 @@ void main() {
   testWidgets('Invalid email validation', (WidgetTester tester) async {
     await tester.pumpWidget(const MaterialApp(home: LoginScreen()));
     await tester.enterText(find.byType(TextFormField).first, 'invalidemail');
-    await tester.tap(find.text('Sign In'));
+    
+    final submitBtn = find.text('Create Account');
+    await tester.ensureVisible(submitBtn);
+    await tester.tap(submitBtn);
     await tester.pumpAndSettle();
 
-    expect(find.text('Please enter a valid email.'), findsOneWidget);
+    expect(find.text('Please enter a valid email address.'), findsOneWidget);
   });
 
   testWidgets('Empty password validation', (WidgetTester tester) async {
     await tester.pumpWidget(const MaterialApp(home: LoginScreen()));
+    final toggleBtn = find.text('Already have an account? Sign In');
+    await tester.ensureVisible(toggleBtn);
+    await tester.tap(toggleBtn);
+    await tester.pumpAndSettle();
+    
     await tester.enterText(find.byType(TextFormField).first, 'test@example.com');
-    await tester.tap(find.text('Sign In'));
+    
+    final submitBtn = find.text('Sign In');
+    await tester.ensureVisible(submitBtn);
+    await tester.tap(submitBtn);
     await tester.pumpAndSettle();
 
-    expect(find.text('Please enter your password.'), findsOneWidget);
+    expect(find.text('Please enter a password.'), findsOneWidget);
   });
 
-  testWidgets('Password validation passes with input', (WidgetTester tester) async {
+  testWidgets('Password validation passes with input in login mode', (WidgetTester tester) async {
     await tester.pumpWidget(const MaterialApp(home: LoginScreen()));
+    final toggleBtn = find.text('Already have an account? Sign In');
+    await tester.ensureVisible(toggleBtn);
+    await tester.tap(toggleBtn);
+    await tester.pumpAndSettle();
+    
     await tester.enterText(find.byType(TextFormField).first, 'test@example.com');
     await tester.enterText(find.byType(TextFormField).last, 'password123');
-    await tester.tap(find.text('Sign In'));
+    
+    final submitBtn = find.text('Sign In');
+    await tester.ensureVisible(submitBtn);
+    await tester.tap(submitBtn);
     await tester.pump(); // Start loading
     
     // Validation messages should not be present
-    expect(find.text('Please enter your password.'), findsNothing);
+    expect(find.text('Please enter a password.'), findsNothing);
+  });
+
+  testWidgets('Password mismatch validation in signup mode', (WidgetTester tester) async {
+    await tester.pumpWidget(const MaterialApp(home: LoginScreen()));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextFormField).first, 'test@example.com');
+    await tester.enterText(find.byType(TextFormField).at(1), 'password123');
+    await tester.enterText(find.byType(TextFormField).last, 'wrongpass');
+    
+    final submitBtn = find.text('Create Account');
+    await tester.ensureVisible(submitBtn);
+    await tester.tap(submitBtn);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Passwords do not match.'), findsOneWidget);
   });
 
   testWidgets('Invalid credentials display error message', (WidgetTester tester) async {
@@ -127,10 +202,17 @@ void main() {
     mockAuth.errorMsg = 'Invalid login credentials';
 
     await tester.pumpWidget(const MaterialApp(home: LoginScreen()));
+    final toggleBtn = find.text('Already have an account? Sign In');
+    await tester.ensureVisible(toggleBtn);
+    await tester.tap(toggleBtn);
+    await tester.pumpAndSettle();
+    
     await tester.enterText(find.byType(TextFormField).first, 'test@example.com');
     await tester.enterText(find.byType(TextFormField).last, 'wrongpass');
     
-    await tester.tap(find.text('Sign In'));
+    final submitBtn = find.text('Sign In');
+    await tester.ensureVisible(submitBtn);
+    await tester.tap(submitBtn);
     await tester.pumpAndSettle();
 
     expect(find.text('Invalid login credentials'), findsOneWidget);
@@ -143,10 +225,17 @@ void main() {
     mockAuth.errorMsg = 'Database connection not available.';
 
     await tester.pumpWidget(const MaterialApp(home: LoginScreen()));
+    final toggleBtn = find.text('Already have an account? Sign In');
+    await tester.ensureVisible(toggleBtn);
+    await tester.tap(toggleBtn);
+    await tester.pumpAndSettle();
+
     await tester.enterText(find.byType(TextFormField).first, 'test@example.com');
     await tester.enterText(find.byType(TextFormField).last, 'wrongpass');
     
-    await tester.tap(find.text('Sign In'));
+    final submitBtn = find.text('Sign In');
+    await tester.ensureVisible(submitBtn);
+    await tester.tap(submitBtn);
     await tester.pumpAndSettle();
 
     expect(find.text('Database connection not available.'), findsOneWidget);
@@ -157,10 +246,17 @@ void main() {
     mockAuth.delayDuration = const Duration(milliseconds: 500); // Simulate network delay
     
     await tester.pumpWidget(const MaterialApp(home: LoginScreen()));
+    final toggleBtn = find.text('Already have an account? Sign In');
+    await tester.ensureVisible(toggleBtn);
+    await tester.tap(toggleBtn);
+    await tester.pumpAndSettle();
+
     await tester.enterText(find.byType(TextFormField).first, 'test@example.com');
     await tester.enterText(find.byType(TextFormField).last, 'password123');
     
-    await tester.tap(find.text('Sign In'));
+    final submitBtn = find.text('Sign In');
+    await tester.ensureVisible(submitBtn);
+    await tester.tap(submitBtn);
     await tester.pump(); // Trigger setState
 
     // Should show loading indicator
