@@ -7,6 +7,8 @@ import '../services/voice_assistant_service.dart';
 import '../../memories/screens/memories_screen.dart';
 import '../../haat_bazaar/screens/haat_bazaar_screen.dart';
 
+import '../../mcp/services/mcp_setup.dart';
+
 class VoiceAssistantScreen extends StatefulWidget {
   const VoiceAssistantScreen({super.key});
 
@@ -31,6 +33,7 @@ class _VoiceAssistantScreenState extends State<VoiceAssistantScreen>
 
     // Navigation intents delivered via callback — BuildContext is safe here
     _voiceService = VoiceAssistantService(
+      actionHandler: McpSetup.createHandler(),
       onNavigate: _handleNavigationIntent,
     );
 

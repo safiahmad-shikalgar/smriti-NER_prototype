@@ -72,4 +72,29 @@ class LocalVoiceActionHandler implements VoiceActionInterface {
     }
     return 'You have drunk $consumed millilitres. $remaining millilitres left to reach your goal of $target.';
   }
+
+  @override
+  Future<String> remindMedicine() async {
+    return 'I will remind you later.';
+  }
+
+  @override
+  Future<String> getMemories() async {
+    return 'Fetching your memories...';
+  }
+
+  @override
+  Future<String> addMemory(String title, String description) async {
+    return 'Adding memory...';
+  }
+
+  @override
+  Future<String> startGame() async {
+    return 'Starting game...';
+  }
+
+  @override
+  Future<String> caregiverSync() async {
+    return 'Syncing with caregiver...';
+  }
 }

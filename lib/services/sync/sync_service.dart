@@ -21,6 +21,9 @@ class SyncService extends ChangeNotifier {
   bool get isSyncing => _isSyncing;
   String get lastSyncStatus => _lastSyncStatus;
   DateTime? get lastSyncTime => _lastSyncTime;
+  
+  // ignore: library_prefixes
+  dynamic get supabaseClient => _supabaseService.client;
 
   Future<void> processSyncQueue() async {
     if (_isSyncing) return;

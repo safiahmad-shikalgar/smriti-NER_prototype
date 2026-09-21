@@ -18,11 +18,64 @@ class CaregiverService extends ChangeNotifier {
 
   Future<void> loadPairing() async {
     _currentPairing = await _repository.getPairing();
+    if (_currentPairing == null) {
+      await _generateNewPairing();
+    } else {
+      await _checkCloudStatus();
+    }
     notifyListeners();
+  }
+
+  Future<void> _generateNewPairing() async {
+    final code = 'SMRITI-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}';
+    final pairing = CaregiverPairing(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      patientId: 'local_user',
+      pairingCode: code,
+      status: 'waiting',
+      createdAt: DateTime.now(),
+    );
+    await _repository.updatePairing(pairing);
+    _currentPairing = pairing;
+  }
+
+  Future<void> _checkCloudStatus() async {
+    if (_currentPairing == null) return;
+    try {
+      final client = _syncService.supabaseClient;
+      if (client != null) {
+        final response = await client
+            .from('caregiver_pairings')
+            .select()
+            .eq('pairing_code', _currentPairing!.pairingCode)
+            .maybeSingle();
+
+        if (response != null) {
+          final cloudPairing = CaregiverPairing.fromMap(response);
+          if (cloudPairing.status == 'connected' && _currentPairing!.status == 'waiting') {
+            _currentPairing = cloudPairing;
+            await _repository.updatePairing(cloudPairing);
+            notifyListeners();
+          }
+        }
+      }
+    } catch (_) {
+      // Offline or error
+    }
+  }
+
+  Future<void> disconnect() async {
+    if (_currentPairing != null) {
+      await _repository.deletePairing();
+      _currentPairing = null;
+      await _generateNewPairing();
+      notifyListeners();
+    }
   }
 
   Future<void> triggerManualSync() async {
     await _syncService.processSyncQueue();
+    await _checkCloudStatus();
     if (_currentPairing != null) {
       final updated = CaregiverPairing(
         id: _currentPairing!.id,

@@ -28,6 +28,7 @@ class VoiceAssistantService extends ChangeNotifier {
   String _lastWords = '';
   String _assistantResponse = '';
   bool _isAvailable = false;
+  VoiceIntent? _pendingIntent;
 
   bool get isListening => _isListening;
   bool get isSpeaking => _isSpeaking;
@@ -134,6 +135,41 @@ class VoiceAssistantService extends ChangeNotifier {
 
     final intent = _recognizer.recognize(text);
 
+    if (_pendingIntent != null) {
+      if (intent.type == IntentType.confirm) {
+        final executeIntent = _pendingIntent!;
+        _pendingIntent = null;
+        await _executeAndSpeak(executeIntent);
+      } else if (intent.type == IntentType.cancel) {
+        _pendingIntent = null;
+        _assistantResponse = 'Okay, cancelled.';
+        _isProcessing = false;
+        notifyListeners();
+        await _speak(_assistantResponse);
+      } else {
+        _assistantResponse = 'Please say yes to confirm or no to cancel.';
+        _isProcessing = false;
+        notifyListeners();
+        await _speak(_assistantResponse);
+      }
+      return;
+    }
+
+    if (intent.type == IntentType.markMedicineDone || intent.type == IntentType.addMemory) {
+      _pendingIntent = intent;
+      _assistantResponse = intent.type == IntentType.markMedicineDone 
+          ? 'Are you sure you want to mark your medicine as done?' 
+          : 'Are you sure you want to save this memory?';
+      _isProcessing = false;
+      notifyListeners();
+      await _speak(_assistantResponse);
+      return;
+    }
+
+    await _executeAndSpeak(intent);
+  }
+
+  Future<void> _executeAndSpeak(VoiceIntent intent) async {
     // Navigation intents are routed to the UI via callback — no BuildContext here
     if (intent.type == IntentType.showMemories ||
         intent.type == IntentType.startHaatBazaar) {

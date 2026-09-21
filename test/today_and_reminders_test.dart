@@ -11,8 +11,6 @@ import 'package:smriti_mvp_new/services/tts/tts_service.dart';
 void main() {
   group('Today, Reminders & Care Schedule Tests', () {
     late Reminder medicineReminder;
-    late Reminder waterReminder;
-    late Reminder activityReminder;
 
     setUp(() {
       medicineReminder = Reminder(
@@ -28,31 +26,7 @@ void main() {
         createdAt: DateTime.now(),
       );
 
-      waterReminder = Reminder(
-        id: 'rem_water_test',
-        patientId: 'patient_aai_01',
-        title: 'Drink Warm Water',
-        subtitle: 'Stay hydrated throughout the day',
-        scheduledTime: 'All Day',
-        type: 'water',
-        targetCount: 6,
-        completedCount: 3,
-        isCompleted: false,
-        createdAt: DateTime.now(),
-      );
 
-      activityReminder = Reminder(
-        id: 'rem_act_test',
-        patientId: 'patient_aai_01',
-        title: 'Play Haat Bazaar',
-        subtitle: 'Memory practice with familiar market goods',
-        scheduledTime: '11:30 AM',
-        type: 'cognitive',
-        targetCount: 1,
-        completedCount: 0,
-        isCompleted: false,
-        createdAt: DateTime.now(),
-      );
     });
 
     testWidgets('MedicineCard displays pending state and triggers Done / Remind Later', (
@@ -189,6 +163,18 @@ void main() {
       WidgetTester tester,
     ) async {
       bool activityStarted = false;
+      final activityReminder = Reminder(
+        id: 'rem_act_test',
+        patientId: 'patient_aai_01',
+        title: 'Play Haat Bazaar',
+        subtitle: 'Memory practice with familiar market goods',
+        scheduledTime: '11:30 AM',
+        type: 'cognitive',
+        targetCount: 1,
+        completedCount: 0,
+        isCompleted: false,
+        createdAt: DateTime.now(),
+      );
 
       await tester.pumpWidget(
         MaterialApp(

@@ -27,4 +27,9 @@ class CaregiverRepository {
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
+
+  Future<void> deletePairing() async {
+    final db = await _dbProvider.database;
+    await db.delete(DatabaseTables.caregiverPairings);
+  }
 }

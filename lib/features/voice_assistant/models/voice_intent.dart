@@ -5,6 +5,11 @@ enum IntentType {
   queryWater,
   showMemories,
   startHaatBazaar,
+  remindMedicine,
+  addMemory,
+  caregiverSync,
+  confirm,
+  cancel,
 }
 
 class VoiceIntent {

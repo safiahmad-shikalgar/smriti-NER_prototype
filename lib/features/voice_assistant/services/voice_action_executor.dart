@@ -46,22 +46,35 @@ class VoiceActionExecutor {
         return ExecutionResult(responseMessage: message);
 
       case IntentType.showMemories:
-        return const ExecutionResult(
-          responseMessage: 'Opening your memories.',
+        return ExecutionResult(
+          responseMessage: await _actionHandler.getMemories(),
           navigationAction: null, // UI fills this in via onNavigate callback
         );
 
       case IntentType.startHaatBazaar:
-        return const ExecutionResult(
-          responseMessage: 'Starting Haat Bazaar.',
+        return ExecutionResult(
+          responseMessage: await _actionHandler.startGame(),
           navigationAction: null, // UI fills this in via onNavigate callback
         );
 
+      case IntentType.remindMedicine:
+        final message = await _actionHandler.remindMedicine();
+        return ExecutionResult(responseMessage: message);
+
+      case IntentType.addMemory:
+        final title = intent.parameters['title'] ?? 'New Memory';
+        final message = await _actionHandler.addMemory(title, '');
+        return ExecutionResult(responseMessage: message);
+
+      case IntentType.caregiverSync:
+        final message = await _actionHandler.caregiverSync();
+        return ExecutionResult(responseMessage: message);
+
+      case IntentType.confirm:
+      case IntentType.cancel:
       case IntentType.unknown:
         return const ExecutionResult(
-          responseMessage:
-              'I did not understand that. Try asking about medicines, water, memories, or games.',
-          success: false,
+          responseMessage: 'Sorry, I did not understand that.',
         );
     }
   }
