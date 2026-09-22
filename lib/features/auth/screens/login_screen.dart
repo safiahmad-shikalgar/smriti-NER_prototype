@@ -100,7 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Welcome to SMRITI',
+                    'Welcome to SMRITI-NER',
                     style: AppTypography.headingLarge(color: AppColors.textPrimary),
                   ),
                   const SizedBox(height: AppSpacing.sm),
@@ -114,7 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   
                   // Email Field
                   Text(
-                    'Gmail Address',
+                    'Enter your Gmail address',
                     style: AppTypography.headingSmall(color: AppColors.textPrimary),
                   ),
                   const SizedBox(height: AppSpacing.sm),
@@ -155,13 +155,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   // Password Field
                   Text(
-                    _isLogin ? 'SMRITI-NER Password' : 'Create SMRITI-NER Password',
+                    _isLogin ? 'Enter your SMRITI-NER password' : 'Create your SMRITI-NER password',
                     style: AppTypography.headingSmall(color: AppColors.textPrimary),
                   ),
                   if (!_isLogin) ...[
                     const SizedBox(height: 4),
                     Text(
-                      'This is a password for SMRITI-NER, not your Gmail password.',
+                      'Create a password for SMRITI-NER. Do not enter your Gmail password.',
                       style: AppTypography.bodySmall(color: AppColors.coral),
                     ),
                   ],
@@ -212,7 +212,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   if (!_isLogin) ...[
                     const SizedBox(height: AppSpacing.xl),
                     Text(
-                      'Confirm Password',
+                      'Confirm your password',
                       style: AppTypography.headingSmall(color: AppColors.textPrimary),
                     ),
                     const SizedBox(height: AppSpacing.sm),
@@ -279,7 +279,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   _isLoading
                       ? const Center(child: CircularProgressIndicator(color: AppColors.coral))
                       : AppButton(
-                          label: _isLogin ? 'Sign In' : 'Create Account',
+                          label: _isLogin ? 'Log In' : 'Create Account',
                           onPressed: _handleSubmit,
                           icon: _isLogin ? Icons.login : Icons.person_add,
                         ),
@@ -291,7 +291,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Text(
                         _isLogin 
                             ? 'Need an account? Create one'
-                            : 'Already have an account? Sign In',
+                            : 'Already have an account? Log In',
                         style: AppTypography.bodyLarge(color: AppColors.coral),
                       ),
                     ),
