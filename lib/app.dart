@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'core/theme/app_theme.dart';
 import 'core/constants/app_constants.dart';
-import 'features/auth/screens/auth_wrapper.dart';
+import 'features/auth/screens/startup_wrapper.dart';
 
 class SmritiApp extends StatelessWidget {
   const SmritiApp({super.key});
@@ -13,7 +13,7 @@ class SmritiApp extends StatelessWidget {
       title: AppConstants.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const AuthWrapper(),
+      home: const StartupWrapper(),
     );
   }
 }

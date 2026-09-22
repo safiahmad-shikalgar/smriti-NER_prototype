@@ -7,7 +7,7 @@ import '../../../models/family_member.dart';
 import '../../../models/memory.dart';
 import '../../../data/repositories/family_repository.dart';
 import '../../../data/repositories/memory_repository.dart';
-import '../../../services/auth/auth_service.dart';
+import '../../../data/repositories/patient_repository.dart';
 import '../widgets/family_member_tile.dart';
 import '../widgets/memory_card.dart';
 import 'add_family_member_screen.dart';
@@ -35,15 +35,16 @@ class _MemoriesScreenState extends State<MemoriesScreen> {
   }
 
   Future<void> _loadData() async {
-    final userId = AuthService.instance.currentUser?.id;
-    if (userId == null) {
+    final patient = await PatientRepository().getPatient();
+    final patientId = patient?.id;
+    if (patientId == null) {
       if (mounted) setState(() => _isLoading = false);
       return;
     }
 
     try {
-      final family = await _familyRepository.getAllFamilyMembers(userId);
-      final mems = await _memoryRepository.getAllMemories(userId);
+      final family = await _familyRepository.getAllFamilyMembers(patientId);
+      final mems = await _memoryRepository.getAllMemories(patientId);
       
       if (mounted) {
         setState(() {

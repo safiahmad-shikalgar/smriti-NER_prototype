@@ -9,7 +9,6 @@ import '../../../widgets/app_avatar.dart';
 import '../../caregiver/screens/caregiver_connect_sheet.dart';
 import '../../../data/repositories/patient_repository.dart';
 import '../../../models/patient.dart';
-import '../../../services/auth/auth_service.dart';
 import '../screens/profile_edit_screen.dart';
 
 class ProfileBottomSheet extends StatefulWidget {
@@ -31,8 +30,7 @@ class _ProfileBottomSheetState extends State<ProfileBottomSheet> {
   }
 
   Future<void> _loadPatient() async {
-    final user = AuthService.instance.currentUser;
-    final patient = await _patientRepo.getPatient(user?.id);
+    final patient = await _patientRepo.getPatient();
     if (mounted) {
       setState(() {
         _patient = patient;
@@ -140,17 +138,6 @@ class _ProfileBottomSheetState extends State<ProfileBottomSheet> {
                   isScrollControlled: true,
                   builder: (_) => const CaregiverConnectSheet(),
                 );
-              },
-            ),
-            _buildProfileItem(
-              context,
-              icon: Icons.logout,
-              title: 'Sign Out',
-              subtitle: 'Securely sign out of your account',
-              onTap: () async {
-                final navigator = Navigator.of(context);
-                await AuthService.instance.signOut();
-                if (navigator.mounted) navigator.pop();
               },
             ),
             const SizedBox(height: AppSpacing.lg),

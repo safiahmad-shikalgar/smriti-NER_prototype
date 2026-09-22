@@ -4,29 +4,13 @@ import 'package:smriti_mvp_new/data/repositories/family_repository.dart';
 import 'package:smriti_mvp_new/data/repositories/memory_repository.dart';
 import 'package:smriti_mvp_new/models/family_member.dart';
 import 'package:smriti_mvp_new/models/memory.dart';
-import 'package:smriti_mvp_new/services/auth/auth_service.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-
-class MockAuthServiceForHome extends AuthService {
-  MockAuthServiceForHome() : super.test();
-
-  @override
-  User? get currentUser => const User(
-        id: 'mock_user_123',
-        appMetadata: {},
-        userMetadata: {},
-        aud: 'authenticated',
-        createdAt: '2024-01-01T00:00:00.000Z',
-      );
-}
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
   setUpAll(() {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
-    AuthService.instance = MockAuthServiceForHome(); // mock user session
     GoogleFonts.config.allowRuntimeFetching = false;
   });
 

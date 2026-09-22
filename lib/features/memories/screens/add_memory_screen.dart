@@ -8,8 +8,8 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/constants/asset_paths.dart';
 import '../../../data/repositories/memory_repository.dart';
+import '../../../data/repositories/patient_repository.dart';
 import '../../../models/memory.dart';
-import '../../../services/auth/auth_service.dart';
 import '../../../widgets/app_button.dart';
 
 class AddMemoryScreen extends StatefulWidget {
@@ -78,9 +78,12 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
       return;
     }
 
-    final userId = AuthService.instance.currentUser?.id;
-    if (userId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User not authenticated.')));
+    final patient = await PatientRepository().getPatient();
+    final patientId = patient?.id;
+    if (patientId == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile not found.')));
+      }
       return;
     }
 
@@ -95,7 +98,7 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
 
     final newMemory = Memory(
       id: widget.memory?.id ?? const Uuid().v4(),
-      patientId: userId,
+      patientId: patientId,
       title: title,
       description: _descController.text.trim(),
       photoPath: photoPath,

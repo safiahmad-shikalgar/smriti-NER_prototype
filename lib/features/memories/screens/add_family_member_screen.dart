@@ -8,8 +8,8 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/constants/asset_paths.dart';
 import '../../../data/repositories/family_repository.dart';
+import '../../../data/repositories/patient_repository.dart';
 import '../../../models/family_member.dart';
-import '../../../services/auth/auth_service.dart';
 import '../../../widgets/app_button.dart';
 
 class AddFamilyMemberScreen extends StatefulWidget {
@@ -86,9 +86,12 @@ class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
       return;
     }
 
-    final userId = AuthService.instance.currentUser?.id;
-    if (userId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User not authenticated.')));
+    final patient = await PatientRepository().getPatient();
+    final patientId = patient?.id;
+    if (patientId == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile not found.')));
+      }
       return;
     }
 
@@ -103,7 +106,7 @@ class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
 
     final newMember = FamilyMember(
       id: widget.member?.id ?? const Uuid().v4(),
-      patientId: userId,
+      patientId: patientId,
       name: name,
       relationship: _selectedRelationship,
       photoPath: photoPath,

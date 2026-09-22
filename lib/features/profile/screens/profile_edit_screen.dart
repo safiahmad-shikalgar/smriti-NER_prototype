@@ -6,7 +6,6 @@ import '../../../core/theme/app_typography.dart';
 import '../../../data/repositories/patient_repository.dart';
 import '../../../models/patient.dart';
 import '../../../widgets/app_button.dart';
-import '../../../services/auth/auth_service.dart';
 
 class ProfileEditScreen extends StatefulWidget {
   final VoidCallback? onProfileSaved;
@@ -36,8 +35,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   }
 
   Future<void> _loadProfile() async {
-    final user = AuthService.instance.currentUser;
-    final patient = await _patientRepo.getPatient(user?.id);
+    final patient = await _patientRepo.getPatient();
     if (patient != null) {
       _existingPatient = patient;
       _nameController.text = patient.fullName;
@@ -67,11 +65,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     });
 
     try {
-      final authUserId = AuthService.instance.currentUser?.id ?? const Uuid().v4();
       final now = DateTime.now();
+      final String patientId = _existingPatient?.id ?? 'patient_${const Uuid().v4()}';
 
       final patientToSave = Patient(
-        id: _existingPatient?.id ?? 'patient_$authUserId',
+        id: patientId,
         name: _nameController.text.trim().split(' ').firstWhere((e) => e.isNotEmpty, orElse: () => 'User'),
         fullName: _nameController.text.trim(),
         age: int.parse(_ageController.text),
