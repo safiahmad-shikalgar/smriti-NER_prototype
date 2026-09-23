@@ -25,11 +25,14 @@ dependencies:
   intl: ^0.20.2
   uuid: ^4.5.1
   speech_to_text: ^7.5.0
+  sqflite_common_ffi_web: ^1.2.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
   sqflite_common_ffi: ^2.3.4
+  build_runner: ^2.16.1
+  build_web_compilers: ^4.8.10
 
 flutter:
   uses-material-design: true
